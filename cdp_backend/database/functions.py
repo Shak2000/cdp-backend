@@ -4,6 +4,7 @@
 import logging
 
 import fireo
+import pandas as pd
 from fireo.models import Model
 from prefect import task
 
@@ -134,7 +135,58 @@ def upload_db_model_task(
     ingestion_model: IngestionModel,
     creds_file: str,
 ) -> Model:
-    # Wraps the standard Python function in Prefect task
+    # Wraps the standard Python function in a Prefect task
     return upload_db_model(
         db_model=db_model, ingestion_model=ingestion_model, creds_file=creds_file
     )
+
+
+def get_all_docs_from_collection(model: Model, creds_file: str) -> pd.DataFrame:
+    """
+    Get all documents from a collection.
+
+    Parameters
+    ----------
+    model: Model
+        The model definition for the collection to retrieve.
+    creds_file: str
+        Path to Google Service Account Credentials JSON file.
+
+    Returns
+    -------
+    data: pd.DataFrame
+        The entire collection as a pandas DataFrame.
+    """
+    # Initialize fireo connection
+    fireo.connection(from_file=creds_file)
+
+    # Fetch all data
+    data = pd.DataFrame([m.to_dict() for m in model.collection.fetch()])
+
+    # Handle no data
+    if len(data) == 0:
+        data = pd.DataFrame(
+            columns=[field_name for field_name, _ in model._meta.field_list.items()]
+        )
+
+    # Rename columns
+    data = data.rename(
+        columns={
+            # Change columns like "key"
+            # into "session_key"
+            c: f"{model.collection_name}_{c}"
+            for c in data.columns
+            # Protect against "session_session_datetime"
+            # where the field was already named
+            # "session_datetime"
+            if model.collection_name not in c
+        }
+    )
+
+    return data
+
+
+@task
+def get_all_docs_from_collection_task(model: Model, creds_file: str) -> pd.DataFrame:
+    # Wraps the standard Python function in a Prefect task
+    return get_all_docs_from_collection(model=model, creds_file=creds_file)
