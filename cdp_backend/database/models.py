@@ -527,3 +527,35 @@ class Vote(Model):
         "decision",
     )
     _INDEXES = ()
+
+
+class IndexedEventNGram(Model):
+    """
+    A document for a specific n-gram, stemmed and un-stemmed, with it's
+    datetime-weighted and pure TFIDF values, along with a contextual span
+    to act as a single document in the whole search index.
+    """
+
+    event_ref = fields.ReferenceField(Event, required=True)
+    unstemmed_ngram = fields.TextField(required=True)
+    stemmed_ngram = fields.TextField(required=True)
+    weighted_value = fields.NumberField(required=True)
+    unweighted_value = fields.NumberField(required=True)
+    context_span = fields.TextField(required=True)
+
+    @classmethod
+    def Example(cls) -> Model:
+        idx_event_ngram = cls()
+        idx_event_ngram.event_ref = Event.Example()
+        idx_event_ngram.unstemmed_gram = "cycle lanes"
+        idx_event_ngram.stemmed_gram = "cycl lane"
+        idx_event_ngram.weighted_value = 16.124
+        idx_event_ngram.unweighted_value = 1.8724
+        idx_event_ngram.context_span = "We need more cycle lanes in the city."
+
+    _PRIMARY_KEYS = (
+        "event_ref",
+        "unstemmed_ngram",
+        "stemmed_ngram",
+    )
+    _INDEXES = ()
