@@ -42,7 +42,6 @@ class Args(argparse.Namespace):
         p.add_argument(
             "-e",
             "--get_events_function_path",
-            type=Path,
             dest="get_events_function_path",
             help=(
                 "Path to the function (including function name) that "
@@ -52,8 +51,8 @@ class Args(argparse.Namespace):
         p.parse_args(namespace=self)
 
 
-def import_get_events_func(func_path: Path) -> Callable:
-    path, func_name = str(func_path).rsplit(".", 1)
+def import_get_events_func(func_path: str) -> Callable:
+    path, func_name = func_path.rsplit(".", 1)
     mod = import_module(path)
 
     return getattr(mod, func_name)
