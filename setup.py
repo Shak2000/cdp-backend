@@ -98,6 +98,7 @@ setup(
                 "cdp_backend.bin.create_cdp_event_gather_flow_viz:main"
             ),
             "run_cdp_event_gather=cdp_backend.bin.run_cdp_event_gather:main",
+            "run_cdp_event_index=cdp_backend.bin.run_cdp_event_index:main",
         ],
     },
     install_requires=requirements,
